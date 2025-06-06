@@ -1,5 +1,7 @@
 package com.example.utils;
 
+import com.example.TodoController;
+
 import java.io.*;
 import java.net.*;
 
@@ -8,6 +10,7 @@ public class HttpServer {
 
     public static void startServer() throws IOException {
         ServerSocket serverSocket = new ServerSocket(PORT);
+        System.out.println("Hello Todo API");
         System.out.println("Server is running on port " + PORT);
 
         while (true) {
@@ -22,21 +25,27 @@ public class HttpServer {
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             String requestLine = reader.readLine();
 
-            System.out.println("Request: " + requestLine);
+            // Log the incoming request
+            System.out.println("Incoming request: " + requestLine);
+
+            // Consume the remaining headers (if any)
+            String line;
+            while (!(line = reader.readLine()).isEmpty()) {
+                // You could log headers if needed
+                System.out.println("Header: " + line);
+            }
 
             OutputStream outputStream = socket.getOutputStream();
             PrintWriter writer = new PrintWriter(outputStream);
 
             if (requestLine != null && requestLine.startsWith("GET")) {
-                writer.println("HTTP/1.1 200 OK");
-                writer.println("Content-Type: text/plain");
-                writer.println();
-                writer.println("Hello, World!");
+                // Route the request based on the URL
+                TodoController.handleRequest(requestLine, writer);
             } else {
-                writer.println("HTTP/1.1 404 Not Found");
+                writer.println("HTTP/1.1 400 Bad Request");
                 writer.println("Content-Type: text/plain");
                 writer.println();
-                writer.println("404 Not Found");
+                writer.println("400 Bad Request");
             }
 
             writer.flush();
